@@ -1,4 +1,4 @@
-baseURL: https://riabhana.netlify.app/
+baseURL: https://riabhana.netlify.app
 languageCode: en-us
 title: Portfolio Website for Ria Bhana
 theme: forty
@@ -8,9 +8,9 @@ params:
   banner:
     buttonText: Get Started
     subtitle: |-
-   #   A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP
-  #   AND RELEASED UNDER THE CREATIVE COMMONS.
-    title: Ria Bhana
+      A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP
+     AND RELEASED UNDER THE CREATIVE COMMONS.
+  title: Ria Bhana
   blog: {}
   contact:
     address:
