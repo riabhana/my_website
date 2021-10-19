@@ -8,7 +8,7 @@ draft: false
 image: Climate_Change_2.jpg
 keywords: ""
 slug: Climate_Change
-title: Ipsum
+title: Climate change
 ---
 
 

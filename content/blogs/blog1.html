@@ -5,10 +5,10 @@ categories:
 date: "2017-10-31T21:28:43-05:00"
 description: ""
 draft: false
-image: Climate Change 2.jpeg
+image: Climate_Change_2.jpg
 keywords: ""
 slug: Climate_Change
-title: Ipsum
+title: Climate change
 ---
 
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
@@ -134,7 +134,7 @@ perc_ci</code></pre>
 <pre><code>## # A tibble: 1 × 2
 ##   lower_ci upper_ci
 ##      &lt;dbl&gt;    &lt;dbl&gt;
-## 1     1.01     1.11</code></pre>
+## 1     1.02     1.10</code></pre>
 <pre class="r"><code>visualise(boot_delta) +
   shade_ci(endpoints = perc_ci, color = &quot;red&quot;) +
   labs(title = &quot;Bootstrap Simulation of Confidence Interval - Average Annual Delta Since 2011&quot;,
