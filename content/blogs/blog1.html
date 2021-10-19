@@ -1,0 +1,148 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T21:28:43-05:00"
+description: ""
+draft: false
+image: Climate Change 2.jpeg
+keywords: ""
+slug: Climate_Change
+title: Ipsum
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>The data has been sourced from <em>Combined Land-Surface Air and Sea-Surface Water Temperature Anomalies</em> in the Northern Hemisphere at <a href="https://data.giss.nasa.gov/gistemp">NASA’s Goddard Institute for Space Studies</a>. The <a href="https://data.giss.nasa.gov/gistemp/tabledata_v4/NH.Ts+dSST.txt">tabular data of temperature anomalies can be found here</a></p>
+<p>Ther first step is to load the file:</p>
+<pre class="r"><code>weather &lt;- 
+  read_csv(&quot;https://data.giss.nasa.gov/gistemp/tabledata_v4/NH.Ts+dSST.csv&quot;, 
+           skip = 1, 
+           na = &quot;***&quot;)
+  view(weather)</code></pre>
+<ol style="list-style-type: decimal">
+<li>Convert the dataframe from wide to ‘long’ format. Hint: use <code>gather()</code> or <code>pivot_longer()</code> function. Name the new dataframe as <code>tidyweather</code>, name the variable containing the name of the month as <code>month</code>, and the temperature deviation values as <code>delta</code>.</li>
+</ol>
+<p>I have selected the twelve month variables from the <code>weather</code> dataset and hidden the columns not required</p>
+<pre class="r"><code>tidyweather &lt;- weather %&gt;%
+               select(-c(&quot;J-D&quot;,&quot;D-N&quot;,&quot;DJF&quot;,&quot;MAM&quot;,&quot;JJA&quot;,&quot;SON&quot;)) %&gt;%  
+               pivot_longer(!Year,names_to=&quot;Month&quot;,values_to=&quot;delta&quot;)
+view(tidyweather)</code></pre>
+<div id="plotting-the-information" class="section level2">
+<h2>Plotting The Information</h2>
+<p>Let us plot the data using a time-series scatter plot, and add a trendline. To do that, we first need to create a new variable called <code>date</code> in order to ensure that the <code>delta</code> values are plot chronologically.</p>
+<p>###The Time Series Scatterplot</p>
+<p>The graph displays the temperature deviation from normal for each month between 1880 to 2021.It is evident that temperatures have been rising when compared to the historical average for every month.</p>
+<pre class="r"><code>tidyweather &lt;- tidyweather %&gt;%
+  mutate(date = ymd(paste(as.character(Year), Month, &quot;1&quot;)),
+         month = month(date, label=TRUE),
+         year = year(date))
+
+ggplot(tidyweather, aes(x=date, y = delta))+
+  geom_point()+
+  geom_smooth(color=&quot;red&quot;) +
+  theme_bw() +
+  labs (
+    title = &quot;Weather Anomalies&quot;
+  )</code></pre>
+<p><img src="/blogs/blog1_files/figure-html/scatter_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>Temperature deviations in some months are also higher than others and to see that I have also created charts that show temperature deviations for each month between 1880-2021. It can be seen that winter months tend to have higher deviations indicative of global warming.</p>
+<pre class="r"><code>ggplot(tidyweather, aes(x=date, y = delta))+
+  geom_point()+
+  geom_smooth(color=&quot;red&quot;) +
+  theme_bw() +
+  facet_wrap(~month) + 
+  labs (
+    title = &quot;Weather Anomalies&quot;
+  )</code></pre>
+<p><img src="/blogs/blog1_files/figure-html/facet_wrap-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>It is also useful to group the data into different time periods to examine historical data. I have thus bucketed data for 30 years.</p>
+<pre class="r"><code>comparison &lt;- tidyweather %&gt;% 
+  filter(Year&gt;= 1881) %&gt;%
+  mutate(interval = case_when(
+    Year %in% c(1881:1920) ~ &quot;1881-1920&quot;,
+    Year %in% c(1921:1950) ~ &quot;1921-1950&quot;,
+    Year %in% c(1951:1980) ~ &quot;1951-1980&quot;,
+    Year %in% c(1981:2010) ~ &quot;1981-2010&quot;,
+    TRUE ~ &quot;2011-present&quot;
+  ))
+view(comparison)</code></pre>
+<p>The density plot helps examine the distribution of monthly deviations by specfic time periods</p>
+<pre class="r"><code>ggplot(comparison, aes(x=delta, fill=interval))+
+  geom_density(alpha=0.2) + 
+  theme_bw() +               
+  labs (
+    title = &quot;Density Plot for Monthly Temperature Anomalies&quot;,
+    y     = &quot;Density&quot;  
+  )</code></pre>
+<p><img src="/blogs/blog1_files/figure-html/density_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>I think it would also be interesting to see anomalies on a yearly basis to see a better trend.I have grouped the data by year, created a mean deviation variable and plotted the scatterplot for temperature changes per year.</p>
+<pre class="r"><code>average_annual_anomaly &lt;- tidyweather %&gt;% 
+  group_by(Year) %&gt;%
+  
+  summarise(annual_average_delta = mean(delta, na.rm = TRUE))
+
+ggplot(average_annual_anomaly, aes(x=Year, y= annual_average_delta))+
+  geom_point()+
+  
+  geom_smooth(color = &quot;red&quot;) +
+  
+  theme_bw() +
+  labs (
+    title = &quot;Average Yearly Anomaly&quot;,
+    y     = &quot;Average Annual Delta&quot;
+  )                         </code></pre>
+<p><img src="/blogs/blog1_files/figure-html/averaging-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>##Calculating the Confidence Interval for temperature deviations <code>delta</code></p>
+<p><a href="https://earthobservatory.nasa.gov/world-of-change/decadaltemp.php">NASA points out on their website</a> that</p>
+<blockquote>
+<p>A one-degree global change is significant because it takes a vast amount of heat to warm all the oceans, atmosphere, and land by that much. In the past, a one- to two-degree drop was all it took to plunge the Earth into the Little Ice Age.</p>
+</blockquote>
+<p>I have constructed a confidence interval for the average annual delta since 2011 using a formula and bootstrap simulation. It tells us how accurate the measurement is.</p>
+<p>It can be seen in the table that the mean temperature deviation was 1.06 which is significant as it represents an average over the entire surface of the planet. In shorter time periods, temperature deviations are more common due to cyclical events but a global change of 1 degree takes a lot of heat.</p>
+<pre class="r"><code>formula_ci &lt;- comparison %&gt;% 
+
+  filter(interval &gt;= 2011, delta != &quot;NA&quot;) %&gt;%
+  group_by(interval) %&gt;%
+  summarise(mean_delta = mean(delta), 
+            SD_delta = sd(delta), 
+            count_delta = n(), 
+            SE_delta = SD_delta / sqrt(count_delta),
+            t_crit = qt(0.975, count_delta - 1),
+            lower = mean_delta - t_crit * SE_delta,
+            upper = mean_delta + t_crit * SE_delta)
+
+formula_ci</code></pre>
+<pre><code>## # A tibble: 1 × 8
+##   interval     mean_delta SD_delta count_delta SE_delta t_crit lower upper
+##   &lt;chr&gt;             &lt;dbl&gt;    &lt;dbl&gt;       &lt;int&gt;    &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 2011-present       1.06    0.274         129   0.0241   1.98  1.01  1.11</code></pre>
+<p>The 95% confidence intervals are 1.01 and 1.11 indicating that we are 95% confident that the temperature devaition would lie between 1.01 and 1.11.</p>
+<pre class="r"><code>library(infer)
+boot_delta &lt;- comparison %&gt;% 
+  filter(interval &gt;= 2011) %&gt;%
+  na.omit() %&gt;%
+  group_by(year) %&gt;% 
+  specify(response = delta) %&gt;% 
+  generate(reps = 1000, type = &quot;bootstrap&quot;) %&gt;% 
+  calculate(stat = &quot;mean&quot;)
+
+perc_ci &lt;- boot_delta %&gt;%
+  get_confidence_interval(level = 0.95, type = &quot;percentile&quot;)
+perc_ci</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   lower_ci upper_ci
+##      &lt;dbl&gt;    &lt;dbl&gt;
+## 1     1.01     1.11</code></pre>
+<pre class="r"><code>visualise(boot_delta) +
+  shade_ci(endpoints = perc_ci, color = &quot;red&quot;) +
+  labs(title = &quot;Bootstrap Simulation of Confidence Interval - Average Annual Delta Since 2011&quot;,
+       x = &quot;Delta&quot;, y = &quot;Frequency&quot;)+
+  theme_economist()</code></pre>
+<p><img src="/blogs/blog1_files/figure-html/calculate_CI_using_bootstrap-1.png" width="648" style="display: block; margin: auto;" /></p>
+<blockquote>
+<p>What the data is telling us</p>
+</blockquote>
+<p>The bootstrap simulation is re sampling the temperature dataset from year 2011 to present. It helps us estimate the confidence intervals as shown on the histogram - the data follows a normal distribution, as expected according to the Central limit theorem, and we are 95% confident that the parameter is within the shown range of 1.01 and 1.11. We can thus infer that the estimates and confidence intervals created by bootstrapping will be very similar. We have also calculated the mean of 1.06 and standard deviation of 0.27 which tells us the temperature has increased since 2011 with some variation. The graph can be useful in judging the impact of global warming in the past decade.</p>
+</div>
