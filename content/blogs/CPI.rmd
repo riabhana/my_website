@@ -1,0 +1,122 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T22:26:13-05:00"
+description: CPI component analysis
+draft: false
+image: CPI_2.jpg
+keywords: ""
+slug: tempus
+title: Yearly Change of US CPI 
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+```{r load-libraries, include=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+library(tidyquant)
+library(rvest) # to scrape wikipedia page
+```
+
+
+The code is adapted from the german poles to scrape the FRED website and all the CPI components are pulled into a vector. 
+
+I have ordered the components by their max CPI yearly change except for **All Items**, which appears first.
+```{r}
+library(rvest) # to scrape wikipedia page
+
+cpi_url <- "https://fredaccount.stlouisfed.org/public/datalist/843"
+
+
+#get tables that exist on URL
+tables <- cpi_url %>% 
+  read_html() %>% 
+  html_nodes(css="table")
+
+
+# parse HTML tables into a dataframe called djia. 
+# Use purr::map() to create a list of all tables in URL
+cpi <- map(tables, . %>% 
+               html_table(fill=TRUE)%>% 
+               clean_names())
+
+```
+
+
+```{r}
+table1 <- cpi[[2]] 
+tickers <- table1 %>% 
+  select(series_id) %>% 
+  pull()
+names <- table1 %>%
+  select(title, series_id) %>% 
+  mutate(name = str_sub(title,47,-22)) %>%
+  rename(symbol = series_id)
+```
+
+Calculating the yearly change in CPI (comparing the current month's value with that 12 months ago lag(value, 12))
+```{r}
+cpidatalist <- tq_get(tickers, get = "economic.data", from =  "2000-01-01") %>% 
+
+
+  mutate(cpi_yoy_change = price/lag(price, 12) - 1)
+```
+
+
+```{r}
+glimpse(cpidatalist) # examine the structure of the resulting data frame
+#tq_get(get = "economic.data", from =  "2000-01-01")
+```
+```{r}
+cpidatalist_0 <- na.omit(cpidatalist)
+cpidatalist_0 <- merge(x=cpidatalist_0,y=names,by="symbol")
+
+cpidatalist_1 <- cpidatalist_0 %>%
+  filter(symbol == "CPIAUCSL") %>%
+  mutate(high_yoy = max(cpi_yoy_change))
+
+cpidatalist_2 <- cpidatalist_0 %>%
+  filter(symbol != "CPIAUCSL") %>%
+  group_by(symbol) %>%
+  mutate(high_yoy = max(cpi_yoy_change)) %>%
+  arrange(desc(high_yoy))
+
+cpidatalist_3 <- rbind(cpidatalist_1, cpidatalist_2) %>%
+  mutate(namef = factor(name, levels = unique(name)))
+```
+
+
+```{r}
+cpidatalist_3 %>%
+  ggplot(aes(x= date, y= cpi_yoy_change))+
+  geom_point(size = 0.5, aes(colour = factor(sign(cpi_yoy_change))))+
+  geom_smooth(size = 0.5)+
+  facet_wrap(~namef, scales = "free")+
+  labs( y = "YoY % Change", title= "Yearly change of US CPI (AII Items) and its components",subtitle = "YoY change being positive or negative \n Jan 2000 to Aug 2021", caption = "Data from St. Louis Fed FRED \n  https://fredaccount.stlouisfed.org/public/datalist/843")+
+  theme(legend.position="none")
+```
+The facet wrapped graphs show the year on year change in CPI components between the years 2000 and 2021. Some components like gas and fuel see higher fluctuation as the prices for these tend to be more volatile. As the economy is more developed, some common items also start contributing less as there is higher disposable income in the economy. 

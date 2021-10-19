@@ -82,24 +82,24 @@ params:
     enable: yes
     showcase:
       - image: lbs.jpg
-        subtitle: Ipsum Dolor Sit Amet
-        title: Risk Return
+        subtitle: A little bit about myself
+        title: My Profile
         url: blogs/risk_return
-      - image: pic02.jpg
-        subtitle: Feugiat Amet Tempus
-        title: Tempus
+      - image: CPI.jpg
+        subtitle: Yearly Change of US CPI 
+        title: CPI Component Analysis
         url: blogs/tempus
       - image: airbnb.jpg
         subtitle: Examining Price Trends for AirBnB 
         title: AirBnB in San Francisco
-        url: blogs/Airbnb
+        url: blogs/airbnb
       - image: climate_change.jpg
         subtitle: Analysis of Global Temperature Deviations
         title: Climate Change
         url: blogs/Climate_Change
-      - image: pic05.jpg
-        subtitle: Ipsum Dolor Sit Amet
-        title: Consequat
+      - image: weight.jpg
+        subtitle: examining the relationship weight and physical activity in high schoolers
+        title: Youth Risk Behavior Analysis
         url: blogs/ipsum
       - image: pic06.jpg
         subtitle: Feugiat Amet Tempus

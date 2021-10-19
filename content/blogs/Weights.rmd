@@ -1,0 +1,152 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T22:42:51-05:00"
+description: examining the relationship weight and physical activity in high schoolers
+draft: false
+image: weight_2.jpg
+keywords: ""
+slug: ipsum
+title: Youth Risk Behavior Analysis
+---
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  
+library(mosaic)
+library(ggthemes)
+library(GGally)
+library(readxl)
+library(here)
+library(skimr)
+library(janitor)
+library(broom)
+library(tidyquant)
+library(infer)
+library(openintro)
+library(lubridate)
+```
+
+
+# Youth Risk Behavior Surveillance
+
+
+```{r}
+data(yrbss)
+glimpse(yrbss)
+
+#skim provides a quick overview of the data frame
+skimr::skim(yrbss)
+```
+
+
+## Data Analysis
+
+Filtering the weight data and finding the summary statistics including mean, median, standard deviation, etc. to give us an idea of key data points to look out for.
+```{r, eda_on_weight}
+
+#summarising the distribution of weights
+weight_data<-yrbss %>% 
+  filter(!is.na(weight)) %>% 
+  summarise(mean=mean(weight,na.rm=TRUE),
+            median=median(weight,na.rm=TRUE),
+            sd=sd(weight, na.rm=TRUE),
+            p0=min(weight, na.rm=TRUE),
+            p100=max(weight, na.rm=TRUE),
+            non_na_count = sum(is.na(weight)))
+
+#the summary tibble
+weight_data
+
+#visualizing with a boxplot and distinguishing between male and female
+ggplot(yrbss,aes(x=weight, y=gender))+
+  geom_boxplot()+
+  theme_minimal()
+
+```
+
+
+The summary statistics reveal that the mean data is 68 kg with a standard deviation of 16.9. Because the median is lower than the mean, the data is positively skewed. As expected, the boxplots show that males tend to weigh more than females. 
+
+
+
+
+> considering the relationship between a high schooler’s weight and their physical activity.
+
+```{r, mutate_and_count}
+
+#removing entries where no phsical activity was available 
+yrbss_2<-yrbss %>% 
+  filter(!is.na(physically_active_7d))
+
+#Plotting the relationship between weight and physical activity
+ggplot(yrbss_2, aes(x=as.factor(physically_active_7d), y=weight))+
+  geom_boxplot()+
+  labs(title="Relationship between weight and physical activity",
+       x="Physical activity (nr. of days active per week)",
+       y="Weight")
+
+#adding a new column which =TRUE whenever the activity level is >=3 
+activity_data <- yrbss %>% 
+  filter(!is.na(weight)) %>% 
+  mutate(physical_3plus=if_else(physically_active_7d >= 3, TRUE, FALSE))
+         
+#summarising the nr. and % of very active people  
+summary_1<- activity_data %>% 
+  summarise(nr_of_actives=count(physical_3plus==TRUE),
+            percent_of_actives=count(physical_3plus==TRUE)/count(physical_3plus %in% c(TRUE,FALSE)),
+            percent_of_non_actives=count(physical_3plus==FALSE)/count(physical_3plus %in% c(TRUE,FALSE)))
+summary_1
+
+#summarising by grou_by, adding confidence interval 
+summary_2<-activity_data %>%
+  filter(!is.na(physical_3plus)) %>% 
+  group_by(physical_3plus) %>% 
+  summarise(count=n()) %>% 
+  mutate(prop=count/sum(count),
+         se=sqrt(prop*(1-prop)/count),
+         upper=prop+1.96*se,
+         lower=prop-1.96*se)
+summary_2
+
+```
+It can be said with 95% certainty that the proportion of high schoolers that are not active for 3 or more days per week is between 31.08%-33.98%. 
+
+
+> a boxplot of `physical_3plus` vs. `weight` to check if there is a relationship 
+
+```{r, boxplot}
+#population proportion calculation
+prop.test(8906,4404+8906)
+
+#boxplots
+ggplot(activity_data, aes(x=as.factor(physical_3plus), y=weight))+geom_boxplot()
+
+
+#t test for physical
+t.test(weight~physical_3plus,data=activity_data)
+
+
+
+
+```
+
+Counterintuitively, the plots show that the weight distribution among very active and less active people is quite similar. The very active tend to weigh slightly more than those who are less active. This was not what we expected since one commonly associates fit people with less heavy people. One explanation is that very active people may have more muscle mass, which leads to higher weight.Also, there are some very heavy (pun intended) outliers in the less active group, which hints at a very unhealthy lifestyle. 

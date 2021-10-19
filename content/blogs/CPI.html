@@ -1,0 +1,79 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T22:26:13-05:00"
+description: CPI component analysis
+draft: false
+image: CPI_2.jpg
+keywords: ""
+slug: tempus
+title: Yearly Change of US CPI 
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<p>The code is adapted from the german poles to scrape the FRED website and all the CPI components are pulled into a vector.</p>
+<p>I have ordered the components by their max CPI yearly change except for <strong>All Items</strong>, which appears first.</p>
+<pre class="r"><code>library(rvest) # to scrape wikipedia page
+
+cpi_url &lt;- &quot;https://fredaccount.stlouisfed.org/public/datalist/843&quot;
+
+
+#get tables that exist on URL
+tables &lt;- cpi_url %&gt;% 
+  read_html() %&gt;% 
+  html_nodes(css=&quot;table&quot;)
+
+
+# parse HTML tables into a dataframe called djia. 
+# Use purr::map() to create a list of all tables in URL
+cpi &lt;- map(tables, . %&gt;% 
+               html_table(fill=TRUE)%&gt;% 
+               clean_names())</code></pre>
+<pre class="r"><code>table1 &lt;- cpi[[2]] 
+tickers &lt;- table1 %&gt;% 
+  select(series_id) %&gt;% 
+  pull()
+names &lt;- table1 %&gt;%
+  select(title, series_id) %&gt;% 
+  mutate(name = str_sub(title,47,-22)) %&gt;%
+  rename(symbol = series_id)</code></pre>
+<p>Calculating the yearly change in CPI (comparing the current month’s value with that 12 months ago lag(value, 12))</p>
+<pre class="r"><code>cpidatalist &lt;- tq_get(tickers, get = &quot;economic.data&quot;, from =  &quot;2000-01-01&quot;) %&gt;% 
+
+
+  mutate(cpi_yoy_change = price/lag(price, 12) - 1)</code></pre>
+<pre class="r"><code>glimpse(cpidatalist) # examine the structure of the resulting data frame</code></pre>
+<pre><code>## Rows: 12,753
+## Columns: 4
+## $ symbol         &lt;chr&gt; &quot;CUSR0000SETG01&quot;, &quot;CUSR0000SETG01&quot;, &quot;CUSR0000SETG01&quot;, &quot;…
+## $ date           &lt;date&gt; 2000-01-01, 2000-02-01, 2000-03-01, 2000-04-01, 2000-0…
+## $ price          &lt;dbl&gt; 222, 230, 241, 240, 241, 245, 247, 250, 245, 236, 238, …
+## $ cpi_yoy_change &lt;dbl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, 0.07754…</code></pre>
+<pre class="r"><code>#tq_get(get = &quot;economic.data&quot;, from =  &quot;2000-01-01&quot;)</code></pre>
+<pre class="r"><code>cpidatalist_0 &lt;- na.omit(cpidatalist)
+cpidatalist_0 &lt;- merge(x=cpidatalist_0,y=names,by=&quot;symbol&quot;)
+
+cpidatalist_1 &lt;- cpidatalist_0 %&gt;%
+  filter(symbol == &quot;CPIAUCSL&quot;) %&gt;%
+  mutate(high_yoy = max(cpi_yoy_change))
+
+cpidatalist_2 &lt;- cpidatalist_0 %&gt;%
+  filter(symbol != &quot;CPIAUCSL&quot;) %&gt;%
+  group_by(symbol) %&gt;%
+  mutate(high_yoy = max(cpi_yoy_change)) %&gt;%
+  arrange(desc(high_yoy))
+
+cpidatalist_3 &lt;- rbind(cpidatalist_1, cpidatalist_2) %&gt;%
+  mutate(namef = factor(name, levels = unique(name)))</code></pre>
+<pre class="r"><code>cpidatalist_3 %&gt;%
+  ggplot(aes(x= date, y= cpi_yoy_change))+
+  geom_point(size = 0.5, aes(colour = factor(sign(cpi_yoy_change))))+
+  geom_smooth(size = 0.5)+
+  facet_wrap(~namef, scales = &quot;free&quot;)+
+  labs( y = &quot;YoY % Change&quot;, title= &quot;Yearly change of US CPI (AII Items) and its components&quot;,subtitle = &quot;YoY change being positive or negative \n Jan 2000 to Aug 2021&quot;, caption = &quot;Data from St. Louis Fed FRED \n  https://fredaccount.stlouisfed.org/public/datalist/843&quot;)+
+  theme(legend.position=&quot;none&quot;)</code></pre>
+<p><img src="/blogs/CPI_files/figure-html/unnamed-chunk-6-1.png" width="648" style="display: block; margin: auto;" />
+The facet wrapped graphs show the year on year change in CPI components between the years 2000 and 2021. Some components like gas and fuel see higher fluctuation as the prices for these tend to be more volatile. As the economy is more developed, some common items also start contributing less as there is higher disposable income in the economy.</p>
