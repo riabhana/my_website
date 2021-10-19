@@ -89,10 +89,10 @@ params:
         subtitle: Feugiat Amet Tempus
         title: Tempus
         url: blogs/tempus
-      - image: pic03.jpg
-        subtitle: Lorem Etiam Nullam
-        title: Magna
-        url: blogs/magna
+      - image: airbnb.jpg
+        subtitle: Examining Price Trends for AirBnB 
+        title: AirBnB in San Francisco
+        url: blogs/Airbnb
       - image: climate_change.jpg
         subtitle: Analysis of Global Temperature Deviations
         title: Climate Change

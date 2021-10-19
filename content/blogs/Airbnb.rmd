@@ -1,0 +1,192 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T22:26:09-05:00"
+description: AirBnB in San Fran
+draft: false
+image: pic09.jpg
+keywords: ""
+slug: magna
+title: Magna
+---
+
+
+In this data set, I work with airbnb data in San Francisco, and plot the map of all AirBnB listings in SF. 
+the data set has 75 variables and 6566 observations. Variables include price, property type, room type, number of reviews, etc.  
+
+
+```{r setup, include=FALSE}
+# leave this chunk alone
+options(knitr.table.format = "html") 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, 
+  comment = NA, dpi = 300)
+```
+
+
+```{r load-libraries, echo=FALSE, warnings=FALSE}
+library(tidyverse) # the usual stuff: dplyr, readr, and other goodies
+library(lubridate) # to handle dates
+library(GGally) # for correlation-scatter plot matrix
+library(ggfortify) # to produce residual diagnostic plots
+library(rsample) # to split dataframe in training- & testing sets
+library(janitor) # clean_names()
+library(broom) # use broom:augment() to get tidy table with regression output, residuals, etc
+library(huxtable) # to get summary table of all models produced
+library(kableExtra) # for formatting tables
+library(moderndive) # for getting regression tables
+library(skimr) # for skim
+library(mosaic)
+library(leaflet) # for interactive HTML maps
+library(tidytext)
+library(viridis)
+library(vroom)
+```
+
+```{r load_data, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+
+# use cache=TRUE so you dont donwload the data everytime you knit
+
+listings <- vroom("http://data.insideairbnb.com/united-states/ca/san-francisco/2021-10-06/data/listings.csv.gz") %>% 
+       clean_names()
+
+```
+
+
+# Exploratory Data Analysis (EDA)
+
+
+
+We start off by answering a few questions about the data based on data wrangling done below: 
+- How many variables/columns? How many rows/observations?
+*The data has 75 variables and 6566 observations 
+- Which variables are numbers?
+*37 variables are numbers, as shown by the list below. In this answer we assume that dates are not numbers.
+- Which are categorical or *factor* variables (numeric or character variables with variables that have a fixed and known set of possible values?
+*22 categorical variables 
+- What are the correlations between variables? Does each scatterplot support a linear relationship between variables? Do any of the correlations appear to be conditional on the value of a categorical variable?
+
+## Data wrangling 
+
+The first step is to view the data and eliminate any non numeric data points so data visualization does not return errors  
+```{r, warning=FALSE}
+#data type
+glimpse(listings)
+#drops any non-numeric characters in price
+listings <- listings %>% 
+  mutate(price = parse_number(price)) 
+```
+
+ Confirming that `price` is now stored as a number.
+```{r}
+#check price is a number
+typeof(listings$price)
+```
+
+We skim for missing data and check some statistics for price and accommodates variable 
+```{r,cache=TRUE}
+#filter for missing / skim data 
+favstats(~price,data=listings) #favstats for price
+favstats(~accommodates,data=listings) #favstats for accommodates (# of people)
+
+listings%>%
+  skim() %>%
+  filter(n_missing > 0)
+```
+From price, we see that the data is probably very skewed towards the right, given its mean is almost at Q3. 
+For accommodates, we see that the variable is probably also skewed towards the right, with most airbnb's accommodating 2 people 
+
+## Propery types
+
+I am now owkring with the property type variable and observing which are the most common and what percentage of all listing do they make up.
+
+Since the most of the observations in the data are one of the top four or five property types,  a simplified version of `property_type` is created and is categorized intothe top four categories and `Other`. 
+
+```{r}
+number_listings <- listings %>%
+  group_by(property_type) %>%
+  count(sort=TRUE) %>%
+  kable(format = "html") %>%
+  kable_classic()
+number_listings
+
+#sum(number_listings$n)
+```
+*The top 4 most common property types are Entire rental unit, Private room in residential home, Entire residential home, Entire condominium (condo). They make up 4103/6566 = 0.625 of the total listings.*
+
+```{r}
+listings <- listings %>%
+  mutate(prop_type_simplified = case_when(
+    property_type %in% c("Entire rental unit","Private room in residential home", "Entire residential home","Entire condominium (condo)") ~ property_type, 
+    TRUE ~ "Other"
+  ))
+  
+```
+
+Checking that `prop_type_simplified` was correctly made.
+
+```{r}
+listings %>%
+  count(property_type, prop_type_simplified) %>%
+  arrange(desc(n))        
+```        
+Now we have 5 distinct property types under `prop_type_simplified` 
+
+
+## Number of nights 
+Airbnb is most commonly used for travel purposes, i.e., as an alternative to traditional hotels. I wanted to filter out all the data points for travel purposes only
+
+```{r}
+#most common value for minimum_nights
+listings %>%
+  group_by(minimum_nights) %>%
+  count(sort=TRUE) %>%
+  kable(format = "html") %>%
+  kable_classic()
+```
+
+- It can be seen that most common values for the variable `minimum_nights` are *30, 1, 2, 3, 4, 5*
+- Among the common values  *30 is evidently larger than others*
+- The likely intended purpose for Airbnb listings with this seemingly unusual value for `minimum_nights` is *to induce users to stay longer to reduce moving, cleaning and marketing costs*
+
+Filter the airbnb data so that it only includes observations with `minimum_nights <= 4`
+```{r}
+#filter for data with less than 4 nights minimum 
+listings_1 <- listings %>%
+  filter(minimum_nights <= 4)
+```
+
+
+## Creating Visualizations to Examine Data
+
+```{r}
+#histogram (price)
+listings%>%
+  ggplot(aes(x=price),binwidth=5)+
+  geom_histogram()+
+  theme_minimal()+
+  labs(title = "Price vs. Count")
+
+#plot with price less than 1000 
+listings %>%
+  filter(price<=1000) %>%
+  ggplot(aes(x=price),binwidth=10) +
+  geom_histogram()+
+  theme_minimal()+
+  labs(title="Price Under 1000 vs. Count",x="price under 1000")
+  NULL
+```
+
+Most listings in San Francisco lie between $50 and $1000. There are a few outliers that go up to $10000. However, it can be seen in the histogram displaying listings below $1000 that majority of the listings are below $250 per night.
+
+```{r}
+#plot for property_type vs average price 
+listings %>%
+  group_by(prop_type_simplified)%>%
+  summarise(avg_price = mean(price)) %>%
+  ggplot(aes(x=prop_type_simplified,y=avg_price))+
+  geom_col()+
+  labs(title = "Property Type vs. Average Price",x="property type",y="average price")
+
+```
+The bar graph displays average price by the type of listing. It helps us see what kind of properties will have a higher price overall. Entire residential homes have highest prices as these properties will have more amenities and space, while a room within a home have lowest average price due to lower privacy and luxury. 
