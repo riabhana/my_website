@@ -8,7 +8,7 @@ params:
   banner:
     buttonText: Get Started
     subtitle: |-
-      A website displaying some the data I have worked with and the findings I thought were interesting.
+      A website displaying some of the data I have worked with and the findings I thought were interesting.
     title: Ria Bhana
   blog: {}
   contact:
@@ -100,18 +100,8 @@ params:
         subtitle: examining the relationship weight and physical activity in high schoolers
         title: Youth Risk Behavior Analysis
         url: blogs/ipsum
-      - image: pic06.jpg
-        subtitle: Feugiat Amet Tempus
-        title: Etiam
-        url: blogs/ipsum
-  two:
-    buttonText: Get Started
-    enable: yes
-    subtitle: "Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero.
-      \n    Mauris aliquet magna magna sed nunc rhoncus pharetra. \n    Pellentesque
-      condimentum sem. In efficitur ligula tate urna. Maecenas laoreet massa vel lacinia
-      pellentesque lorem ipsum dolor. \n    Nullam et orci eu lorem consequat tincidunt.
-      Vivamus et sagittis libero.\n    Mauris aliquet magna magna sed nunc rhoncus
-      amet pharetra et feugiat tempus."
-    title: Massa libero
-    url: blogs
+      - image: salary_2.jpg
+        subtitle: Examining differnce in salary between men and women
+        title: Gender Pay Gap
+        url: blogs/etiam
+ 

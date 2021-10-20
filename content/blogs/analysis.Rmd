@@ -1,0 +1,114 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T22:42:51-05:00"
+description: Examining differnce in salary between men and women
+draft: false
+image: salary.jpg
+keywords: ""
+slug: etiam
+title: Gender Pay Gap Analysis
+---
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(GGally)
+library(readxl)
+library(here)
+library(skimr)
+library(janitor)
+library(broom)
+library(tidyquant)
+library(infer)
+library(openintro)
+library(lubridate)
+```
+## Loading the data
+
+
+```{r load_omega_data}
+omega <- read_csv(here::here("data", "omega.csv"))
+glimpse(omega) # examine the data frame
+```
+
+## Is there a relationship between salary and gender?
+
+In recent years there has been increasing amount of research on the gender pay gap.Women are generally considered to be paid less than men. These differences are often caused by by occupational segregation ( men in higher paid industries compared to women), vertical segregation (fewer women in senior positions), ineffective legislation,and barriers to entry. Here, I have conducte a basic hypothesis test to see whether the gender gap is true.  
+
+summary statistics on salary by gender
+
+```{r, confint_single_valiables}
+# Summary Statistics of salary by gender
+mosaic::favstats (salary ~ gender, data=omega)
+
+# Dataframe with two rows (male-female) and having as columns gender, mean, SD, sample size, 
+# the t-critical value, the standard error, the margin of error, 
+# and the low/high endpoints of a 95% condifence interval
+omega_summary<-omega %>% 
+  group_by(gender) %>% 
+  summarise(mean=mean(salary),
+            SD=sd(salary),
+            count=n(),
+            t_critical=qt(p=0.975, count-1),
+            SE=SD/sqrt(count),
+            margin_of_error=t_critical*SE,
+            low_CI=mean-margin_of_error,
+            high_CI=mean+margin_of_error)
+omega_summary
+
+```
+
+
+Based on this table, we can see that there is a high probability of difference in the mean salary between men and women as there is no overlap in the confidence intervals. However, this is just an estimation and a hypothesis test is required to make a more confident decision.  
+
+
+
+A hypothesis testing, assuming as a null hypothesis that the mean difference in salaries is zero, or that, on average, men and women make the same amount of money. 
+
+```{r, hypothesis_testing}
+# hypothesis testing using t.test() 
+t.test(salary~gender, data=omega)
+
+# hypothesis testing using infer package
+#generating 1000 samples and calculating the difference in means between male and female salaries
+salary_in_null_world<-omega%>% 
+  specify(salary ~gender)%>%
+  hypothesize(null = "independence") %>%
+  generate(reps =1000, type ="permute") %>% 
+  calculate(stat = "diff in means",order = c("male", "female")) 
+
+#getting the p_value for the observed difference in mean salary 
+p_value<- salary_in_null_world %>% 
+  get_pvalue(obs_stat=73239.13-64542.84, direction="both")
+
+#printing the p_value
+p_value
+
+#visualizing the distribution that was generated earlier 
+salary_in_null_world%>% visualize()
+
+```
+
+
+
+Based on this analysis, there is a difference in the mean salary for males and females at Omega. The t-statistic returns a value of c. -4.09,indicating the observed difference in mean salary is extremely unlikely to be due to pure chance. The common causation of pay gap listen above are probably true upon further analysis. Similarly, the hypothesis test based on inference returns a p-value of 0. While the actual p-value will be greater than 0, this shows that it is at least very close to 0 and thereby another indicator of a statistically significant difference in mean salary. 

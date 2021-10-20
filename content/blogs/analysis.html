@@ -1,0 +1,92 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T22:42:51-05:00"
+description: Examining differnce in salary between men and women
+draft: false
+image: salary.jpg
+keywords: ""
+slug: etiam
+title: Gender Pay Gap Analysis
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<div id="loading-the-data" class="section level2">
+<h2>Loading the data</h2>
+<pre class="r"><code>omega &lt;- read_csv(here::here(&quot;data&quot;, &quot;omega.csv&quot;))
+glimpse(omega) # examine the data frame</code></pre>
+<pre><code>## Rows: 50
+## Columns: 3
+## $ salary     &lt;dbl&gt; 81894, 69517, 68589, 74881, 65598, 76840, 78800, 70033, 635…
+## $ gender     &lt;chr&gt; &quot;male&quot;, &quot;male&quot;, &quot;male&quot;, &quot;male&quot;, &quot;male&quot;, &quot;male&quot;, &quot;male&quot;, &quot;ma…
+## $ experience &lt;dbl&gt; 16, 25, 15, 33, 16, 19, 32, 34, 1, 44, 7, 14, 33, 19, 24, 3…</code></pre>
+</div>
+<div id="is-there-a-relationship-between-salary-and-gender" class="section level2">
+<h2>Is there a relationship between salary and gender?</h2>
+<p>In recent years there has been increasing amount of research on the gender pay gap.Women are generally considered to be paid less than men. These differences are often caused by by occupational segregation ( men in higher paid industries compared to women), vertical segregation (fewer women in senior positions), ineffective legislation,and barriers to entry. Here, I have conducte a basic hypothesis test to see whether the gender gap is true.</p>
+<p>summary statistics on salary by gender</p>
+<pre class="r"><code># Summary Statistics of salary by gender
+mosaic::favstats (salary ~ gender, data=omega)</code></pre>
+<pre><code>##   gender   min    Q1 median    Q3   max  mean   sd  n missing
+## 1 female 47033 60338  64618 70033 78800 64543 7567 26       0
+## 2   male 54768 68331  74675 78568 84576 73239 7463 24       0</code></pre>
+<pre class="r"><code># Dataframe with two rows (male-female) and having as columns gender, mean, SD, sample size, 
+# the t-critical value, the standard error, the margin of error, 
+# and the low/high endpoints of a 95% condifence interval
+omega_summary&lt;-omega %&gt;% 
+  group_by(gender) %&gt;% 
+  summarise(mean=mean(salary),
+            SD=sd(salary),
+            count=n(),
+            t_critical=qt(p=0.975, count-1),
+            SE=SD/sqrt(count),
+            margin_of_error=t_critical*SE,
+            low_CI=mean-margin_of_error,
+            high_CI=mean+margin_of_error)
+omega_summary</code></pre>
+<pre><code>## # A tibble: 2 × 9
+##   gender   mean    SD count t_critical    SE margin_of_error low_CI high_CI
+##   &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;      &lt;dbl&gt; &lt;dbl&gt;           &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+## 1 female 64543. 7567.    26       2.06 1484.           3056. 61486.  67599.
+## 2 male   73239. 7463.    24       2.07 1523.           3151. 70088.  76390.</code></pre>
+<p>Based on this table, we can see that there is a high probability of difference in the mean salary between men and women as there is no overlap in the confidence intervals. However, this is just an estimation and a hypothesis test is required to make a more confident decision.</p>
+<p>A hypothesis testing, assuming as a null hypothesis that the mean difference in salaries is zero, or that, on average, men and women make the same amount of money.</p>
+<pre class="r"><code># hypothesis testing using t.test() 
+t.test(salary~gender, data=omega)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  salary by gender
+## t = -4, df = 48, p-value = 2e-04
+## alternative hypothesis: true difference in means between group female and group male is not equal to 0
+## 95 percent confidence interval:
+##  -12973  -4420
+## sample estimates:
+## mean in group female   mean in group male 
+##                64543                73239</code></pre>
+<pre class="r"><code># hypothesis testing using infer package
+#generating 1000 samples and calculating the difference in means between male and female salaries
+salary_in_null_world&lt;-omega%&gt;% 
+  specify(salary ~gender)%&gt;%
+  hypothesize(null = &quot;independence&quot;) %&gt;%
+  generate(reps =1000, type =&quot;permute&quot;) %&gt;% 
+  calculate(stat = &quot;diff in means&quot;,order = c(&quot;male&quot;, &quot;female&quot;)) 
+
+#getting the p_value for the observed difference in mean salary 
+p_value&lt;- salary_in_null_world %&gt;% 
+  get_pvalue(obs_stat=73239.13-64542.84, direction=&quot;both&quot;)
+
+#printing the p_value
+p_value</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##   p_value
+##     &lt;dbl&gt;
+## 1       0</code></pre>
+<pre class="r"><code>#visualizing the distribution that was generated earlier 
+salary_in_null_world%&gt;% visualize()</code></pre>
+<p><img src="/blogs/analysis_files/figure-html/hypothesis_testing-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>Based on this analysis, there is a difference in the mean salary for males and females at Omega. The t-statistic returns a value of c. -4.09,indicating the observed difference in mean salary is extremely unlikely to be due to pure chance. The common causation of pay gap listen above are probably true upon further analysis. Similarly, the hypothesis test based on inference returns a p-value of 0. While the actual p-value will be greater than 0, this shows that it is at least very close to 0 and thereby another indicator of a statistically significant difference in mean salary.</p>
+</div>
