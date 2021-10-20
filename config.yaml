@@ -8,8 +8,8 @@ params:
   banner:
     buttonText: Get Started
     subtitle: |-
-      A website displaying some of the data I have worked with and the findings I thought were interesting.
-    title: Ria Bhana
+      A summary of some of the data I have worked with and the findings I thought were interesting.
+    title: Ria Bhana's Website
   blog: {}
   contact:
     address:
