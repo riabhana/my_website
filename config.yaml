@@ -68,15 +68,13 @@ params:
     links:
       - name: Home
         url: '#'
-      - name: Blogs
-        url: blogs
-      - name: Generic Blog
+      - name: About myself 
+        url: blogs/risk_return
+      - name: My Favorite Blog
         url: blogs/ipsum
-    #  - name: Elements
-       # url: elements.html
     menu: Menu
-    subtitle: By HTML5 Up
-    title: Forty
+   # subtitle: 
+    title: Home 
   tiles:
     enable: yes
     showcase:
