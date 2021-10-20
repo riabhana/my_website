@@ -21,9 +21,6 @@ title: Climate change
            skip = 1, 
            na = &quot;***&quot;)
   view(weather)</code></pre>
-<ol style="list-style-type: decimal">
-<li>Convert the dataframe from wide to ‘long’ format. Hint: use <code>gather()</code> or <code>pivot_longer()</code> function. Name the new dataframe as <code>tidyweather</code>, name the variable containing the name of the month as <code>month</code>, and the temperature deviation values as <code>delta</code>.</li>
-</ol>
 <p>I have selected the twelve month variables from the <code>weather</code> dataset and hidden the columns not required</p>
 <pre class="r"><code>tidyweather &lt;- weather %&gt;%
                select(-c(&quot;J-D&quot;,&quot;D-N&quot;,&quot;DJF&quot;,&quot;MAM&quot;,&quot;JJA&quot;,&quot;SON&quot;)) %&gt;%  
@@ -32,7 +29,7 @@ view(tidyweather)</code></pre>
 <div id="plotting-the-information" class="section level2">
 <h2>Plotting The Information</h2>
 <p>Let us plot the data using a time-series scatter plot, and add a trendline. To do that, we first need to create a new variable called <code>date</code> in order to ensure that the <code>delta</code> values are plot chronologically.</p>
-<p>###The Time Series Scatterplot</p>
+<p>##The Time Series Scatterplot</p>
 <p>The graph displays the temperature deviation from normal for each month between 1880 to 2021.It is evident that temperatures have been rising when compared to the historical average for every month.</p>
 <pre class="r"><code>tidyweather &lt;- tidyweather %&gt;%
   mutate(date = ymd(paste(as.character(Year), Month, &quot;1&quot;)),
@@ -96,9 +93,7 @@ ggplot(average_annual_anomaly, aes(x=Year, y= annual_average_delta))+
 <p><img src="/blogs/blog1_files/figure-html/averaging-1.png" width="648" style="display: block; margin: auto;" /></p>
 <p>##Calculating the Confidence Interval for temperature deviations <code>delta</code></p>
 <p><a href="https://earthobservatory.nasa.gov/world-of-change/decadaltemp.php">NASA points out on their website</a> that</p>
-<blockquote>
 <p>A one-degree global change is significant because it takes a vast amount of heat to warm all the oceans, atmosphere, and land by that much. In the past, a one- to two-degree drop was all it took to plunge the Earth into the Little Ice Age.</p>
-</blockquote>
 <p>I have constructed a confidence interval for the average annual delta since 2011 using a formula and bootstrap simulation. It tells us how accurate the measurement is.</p>
 <p>It can be seen in the table that the mean temperature deviation was 1.06 which is significant as it represents an average over the entire surface of the planet. In shorter time periods, temperature deviations are more common due to cyclical events but a global change of 1 degree takes a lot of heat.</p>
 <pre class="r"><code>formula_ci &lt;- comparison %&gt;% 
@@ -134,15 +129,13 @@ perc_ci</code></pre>
 <pre><code>## # A tibble: 1 × 2
 ##   lower_ci upper_ci
 ##      &lt;dbl&gt;    &lt;dbl&gt;
-## 1     1.02     1.10</code></pre>
+## 1     1.01     1.11</code></pre>
 <pre class="r"><code>visualise(boot_delta) +
   shade_ci(endpoints = perc_ci, color = &quot;red&quot;) +
   labs(title = &quot;Bootstrap Simulation of Confidence Interval - Average Annual Delta Since 2011&quot;,
        x = &quot;Delta&quot;, y = &quot;Frequency&quot;)+
   theme_economist()</code></pre>
 <p><img src="/blogs/blog1_files/figure-html/calculate_CI_using_bootstrap-1.png" width="648" style="display: block; margin: auto;" /></p>
-<blockquote>
 <p>What the data is telling us</p>
-</blockquote>
 <p>The bootstrap simulation is re sampling the temperature dataset from year 2011 to present. It helps us estimate the confidence intervals as shown on the histogram - the data follows a normal distribution, as expected according to the Central limit theorem, and we are 95% confident that the parameter is within the shown range of 1.01 and 1.11. We can thus infer that the estimates and confidence intervals created by bootstrapping will be very similar. We have also calculated the mean of 1.06 and standard deviation of 0.27 which tells us the temperature has increased since 2011 with some variation. The graph can be useful in judging the impact of global warming in the past decade.</p>
 </div>

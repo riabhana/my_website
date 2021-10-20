@@ -43,6 +43,10 @@ library(infer)
 library(openintro)
 library(lubridate)
 ```
+## Is there a relationship between salary and gender?
+
+In recent years there has been increasing amount of research on the gender pay gap.Women are generally considered to be paid less than men. These differences are often caused by by occupational segregation ( men in higher paid industries compared to women), vertical segregation (fewer women in senior positions), ineffective legislation,and barriers to entry. Here, I have conducte a basic hypothesis test to see whether the gender gap is true. 
+
 ## Loading the data
 
 
@@ -51,9 +55,7 @@ omega <- read_csv(here::here("data", "omega.csv"))
 glimpse(omega) # examine the data frame
 ```
 
-## Is there a relationship between salary and gender?
-
-In recent years there has been increasing amount of research on the gender pay gap.Women are generally considered to be paid less than men. These differences are often caused by by occupational segregation ( men in higher paid industries compared to women), vertical segregation (fewer women in senior positions), ineffective legislation,and barriers to entry. Here, I have conducte a basic hypothesis test to see whether the gender gap is true.  
+ 
 
 summary statistics on salary by gender
 

@@ -53,19 +53,6 @@ listings <- vroom("http://data.insideairbnb.com/united-states/ca/san-francisco/2
 ```
 
 
-# Exploratory Data Analysis (EDA)
-
-
-
-We start off by answering a few questions about the data based on data wrangling done below: 
-- How many variables/columns? How many rows/observations?
-*The data has 75 variables and 6566 observations 
-- Which variables are numbers?
-*37 variables are numbers, as shown by the list below. In this answer we assume that dates are not numbers.
-- Which are categorical or *factor* variables (numeric or character variables with variables that have a fixed and known set of possible values?
-*22 categorical variables 
-- What are the correlations between variables? Does each scatterplot support a linear relationship between variables? Do any of the correlations appear to be conditional on the value of a categorical variable?
-
 ## Data wrangling 
 
 The first step is to view the data and eliminate any non numeric data points so data visualization does not return errors  

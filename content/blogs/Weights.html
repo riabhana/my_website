@@ -14,6 +14,8 @@ title: Youth Risk Behavior Analysis
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 
 
+<p>This project looks at the relationship between the amount of physical activity high schoolers undertake and their weight.</p>
+<p>Surprisingly, the plots show that the weight distribution among very active and less active people is quite similar. The very active tend to weigh slightly more than those who are less active. This was not what I expected since one commonly associates fit people with less heavy people. One explanation is that very active people may have more muscle mass, which leads to higher weight.Also, there are some very heavy (pun intended) outliers in the less active group, which hints at a very unhealthy lifestyle.</p>
 <div id="youth-risk-behavior-surveillance" class="section level1">
 <h1>Youth Risk Behavior Surveillance</h1>
 <pre class="r"><code>data(yrbss)
@@ -283,9 +285,7 @@ ggplot(yrbss,aes(x=weight, y=gender))+
   theme_minimal()</code></pre>
 <p><img src="/blogs/Weights_files/figure-html/eda_on_weight-1.png" width="648" style="display: block; margin: auto;" /></p>
 <p>The summary statistics reveal that the mean data is 68 kg with a standard deviation of 16.9. Because the median is lower than the mean, the data is positively skewed. As expected, the boxplots show that males tend to weigh more than females.</p>
-<blockquote>
 <p>considering the relationship between a high schooler’s weight and their physical activity.</p>
-</blockquote>
 <pre class="r"><code>#removing entries where no phsical activity was available 
 yrbss_2&lt;-yrbss %&gt;% 
   filter(!is.na(physically_active_7d))
@@ -328,9 +328,7 @@ summary_2</code></pre>
 ## 1 FALSE           4022 0.325 0.00739 0.340 0.311
 ## 2 TRUE            8342 0.675 0.00513 0.685 0.665</code></pre>
 <p>It can be said with 95% certainty that the proportion of high schoolers that are not active for 3 or more days per week is between 31.08%-33.98%.</p>
-<blockquote>
 <p>a boxplot of <code>physical_3plus</code> vs. <code>weight</code> to check if there is a relationship</p>
-</blockquote>
 <pre class="r"><code>#population proportion calculation
 prop.test(8906,4404+8906)</code></pre>
 <pre><code>## 
@@ -360,6 +358,5 @@ t.test(weight~physical_3plus,data=activity_data)</code></pre>
 ## sample estimates:
 ## mean in group FALSE  mean in group TRUE 
 ##                66.7                68.4</code></pre>
-<p>Counterintuitively, the plots show that the weight distribution among very active and less active people is quite similar. The very active tend to weigh slightly more than those who are less active. This was not what we expected since one commonly associates fit people with less heavy people. One explanation is that very active people may have more muscle mass, which leads to higher weight.Also, there are some very heavy (pun intended) outliers in the less active group, which hints at a very unhealthy lifestyle.</p>
 </div>
 </div>

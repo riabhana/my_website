@@ -11,6 +11,9 @@ slug: ipsum
 title: Youth Risk Behavior Analysis
 ---
 
+This project looks at the relationship between the amount of physical activity high schoolers undertake and their weight. 
+
+Surprisingly, the plots show that the weight distribution among very active and less active people is quite similar. The very active tend to weigh slightly more than those who are less active. This was not what I expected since one commonly associates fit people with less heavy people. One explanation is that very active people may have more muscle mass, which leads to higher weight.Also, there are some very heavy (pun intended) outliers in the less active group, which hints at a very unhealthy lifestyle.
 
 ```{r, setup, echo=FALSE}
 knitr::opts_chunk$set(
@@ -89,7 +92,7 @@ The summary statistics reveal that the mean data is 68 kg with a standard deviat
 
 
 
-> considering the relationship between a high schooler’s weight and their physical activity.
+considering the relationship between a high schooler’s weight and their physical activity.
 
 ```{r, mutate_and_count}
 
@@ -131,7 +134,7 @@ summary_2
 It can be said with 95% certainty that the proportion of high schoolers that are not active for 3 or more days per week is between 31.08%-33.98%. 
 
 
-> a boxplot of `physical_3plus` vs. `weight` to check if there is a relationship 
+a boxplot of `physical_3plus` vs. `weight` to check if there is a relationship 
 
 ```{r, boxplot}
 #population proportion calculation
@@ -149,4 +152,4 @@ t.test(weight~physical_3plus,data=activity_data)
 
 ```
 
-Counterintuitively, the plots show that the weight distribution among very active and less active people is quite similar. The very active tend to weigh slightly more than those who are less active. This was not what we expected since one commonly associates fit people with less heavy people. One explanation is that very active people may have more muscle mass, which leads to higher weight.Also, there are some very heavy (pun intended) outliers in the less active group, which hints at a very unhealthy lifestyle. 
+ 

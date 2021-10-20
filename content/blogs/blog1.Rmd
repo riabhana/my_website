@@ -63,9 +63,6 @@ weather <-
 
 
 
-
-1. Convert the dataframe from wide to 'long' format. Hint: use `gather()` or `pivot_longer()` function. Name the new dataframe as `tidyweather`, name the variable containing the name of the month as `month`, and the temperature deviation values as `delta`.
-
 I have selected the twelve month variables from the `weather` dataset and hidden the columns not required
 ```{r tidyweather}
 tidyweather <- weather %>%
@@ -82,7 +79,7 @@ view(tidyweather)
 Let us plot the data using a time-series scatter plot, and add a trendline. To do that, we first need to create a new variable called `date` in order to ensure that the `delta` values are plot chronologically. 
 
 
-###The Time Series Scatterplot 
+##The Time Series Scatterplot 
 
 The graph displays the temperature deviation from normal for each month between 1880 to 2021.It is evident that temperatures have been rising when compared to the historical average for every month. 
 
@@ -177,7 +174,7 @@ ggplot(average_annual_anomaly, aes(x=Year, y= annual_average_delta))+
 
 [NASA points out on their website](https://earthobservatory.nasa.gov/world-of-change/decadaltemp.php) that 
 
-> A one-degree global change is significant because it takes a vast amount of heat to warm all the oceans, atmosphere, and land by that much. In the past, a one- to two-degree drop was all it took to plunge the Earth into the Little Ice Age.
+ A one-degree global change is significant because it takes a vast amount of heat to warm all the oceans, atmosphere, and land by that much. In the past, a one- to two-degree drop was all it took to plunge the Earth into the Little Ice Age.
 
 I have constructed a confidence interval for the average annual delta since 2011 using a formula and bootstrap simulation. It tells us how accurate the measurement is. 
 
@@ -224,7 +221,7 @@ visualise(boot_delta) +
 ```
 
 
-> What the data is telling us
+ What the data is telling us
 
 The bootstrap simulation is re sampling the temperature dataset from year 2011 to present. It helps us estimate the confidence intervals as shown on the histogram - the data follows a normal distribution, as expected according to the Central limit theorem, and we are 95% confident that the parameter is within the shown range of 1.01 and 1.11. We can thus infer that the estimates and confidence intervals created by bootstrapping will be very similar. We have also calculated the mean of 1.06 and standard deviation of 0.27 which tells us the temperature has increased since 2011 with some variation. The graph can be useful in judging the impact of global warming in the past decade.
 
