@@ -7,7 +7,7 @@ description: examining the relationship weight and physical activity in high sch
 draft: false
 image: weight_2.jpg
 keywords: ""
-slug: ipsum
+slug: weight
 title: Youth Risk Behavior Analysis
 ---
 

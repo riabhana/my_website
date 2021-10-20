@@ -81,11 +81,11 @@ params:
       - image: lbs.jpg
         subtitle: A little bit about myself
         title: My Profile
-        url: blogs/risk_return
+        url: blogs/profile
       - image: CPI.jpg
         subtitle: Yearly Change of US CPI 
         title: CPI Component Analysis
-        url: blogs/tempus
+        url: blogs/cpi
       - image: airbnb.jpg
         subtitle: Examining Price Trends for AirBnB 
         title: AirBnB in San Francisco
@@ -97,9 +97,9 @@ params:
       - image: weight.jpg
         subtitle: examining the relationship weight and physical activity in high schoolers
         title: Youth Risk Behavior Analysis
-        url: blogs/ipsum
+        url: blogs/weight
       - image: salary_2.jpg
         subtitle: Examining differnce in salary between men and women
         title: Gender Pay Gap
-        url: blogs/etiam
+        url: blogs/gender_gap
  
